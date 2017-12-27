@@ -55,6 +55,9 @@ lazy val tester = (project in file("tester")).
 	    inThisBuild(commonSettings),
 	    name := "the-tester",
 	    libraryDependencies ++= commonDependencies,
-	    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1"
+	    libraryDependencies ++= Seq(
+          "org.scalatest" %% "scalatest" % "3.0.1",
+          "org.testcontainers" % "testcontainers" % "1.5.1"
+      )
 	)
 

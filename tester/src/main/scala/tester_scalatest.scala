@@ -10,25 +10,21 @@ import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration._
 //import scala.util.{ Failure, Success }
 
-class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers {
+class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers with BeforeAndAfterAll {
 
   var system: ActorSystem = _
   var materializer: ActorMaterializer = _
 
-  override def withFixture(test: NoArgTest) = {
+  override def beforeAll() {
     system = ActorSystem()
     implicit val sys = system
     materializer = ActorMaterializer()
-    // needed for the future flatMap/onComplete in the end
     implicit val executionContext = system.dispatcher
-    try {
-      super.withFixture(test) 
-    }
-    finally {
-      system.terminate()
-    }
   }
 
+  override def afterAll() {
+      system.terminate()
+  }
 
   "The webservice" should "respond on localhost:8080" in {
     val query: Future[HttpResponse] = Http(system).singleRequest(HttpRequest(uri = "http://localhost:8080"))

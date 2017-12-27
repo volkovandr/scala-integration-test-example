@@ -4,9 +4,15 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import scala.io.StdIn
+import com.typesafe.config.ConfigFactory
 
 object WebServer {
   def main(args: Array[String]) {
+
+    val config  = ConfigFactory.load()
+
+    val host = config.getString("SimpleServer.host")
+    val port = config.getInt("SimpleServer.port")
 
     implicit val system = ActorSystem("my-system")
     implicit val materializer = ActorMaterializer()
@@ -22,7 +28,7 @@ object WebServer {
         }
       )
 
-    val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+    val bindingFuture = Http().bindAndHandle(route, host, port)
 
     def shutdown() = {
       println("Shutting down")
@@ -32,11 +38,15 @@ object WebServer {
     }
 
     val shutdownHook = sys.addShutdownHook(shutdown)
-
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-    StdIn.readLine() // let it run until user presses return
-
-    shutdownHook.remove()
-    shutdown()
+  
+    if(args.length > 0)
+    {
+      println(s"Server online at http://$host:$port/\nPress ENTER to stop...")
+      StdIn.readLine() // let it run until user presses return
+      shutdownHook.remove()
+      shutdown()
+    }
+    else
+      println(s"Server online at http://$host:$port/\nPress Ctrl+C to stop...")
   }
 }

@@ -13,11 +13,12 @@ import scala.concurrent.duration._
 class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers {
 
   var system: ActorSystem = _
+  var materializer: ActorMaterializer = _
 
   override def withFixture(test: NoArgTest) = {
     system = ActorSystem()
     implicit val sys = system
-    implicit val materializer = ActorMaterializer()
+    materializer = ActorMaterializer()
     // needed for the future flatMap/onComplete in the end
     implicit val executionContext = system.dispatcher
     try {
@@ -30,21 +31,24 @@ class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers {
 
 
   "The webservice" should "respond on localhost:8080" in {
-    val query = Http(system).singleRequest(HttpRequest(uri = "http://localhost:8080"))
+    val query: Future[HttpResponse] = Http(system).singleRequest(HttpRequest(uri = "http://localhost:8080"))
     val result = Await.result(query, 10.seconds)
     result shouldBe a [HttpResponse]
+    Await.result(result.discardEntityBytes(materializer).future, 10.seconds)
   }
 
   it should "respond with status code 200 when /zorro is queried" in {
-    val query = Http(system).singleRequest(HttpRequest(uri = "http://localhost:8080/zorro"))
+    val query: Future[HttpResponse] = Http(system).singleRequest(HttpRequest(uri = "http://localhost:8080/zorro"))
     val result = Await.result(query, 10.seconds)
     result.status.intValue should equal(200)
+    Await.result(result.discardEntityBytes(materializer).future, 10.seconds)
   }
 
   it should "return content type application/json at /zorro" in {
-    val query = Http(system).singleRequest(HttpRequest(uri = "http://localhost:8080/zorro"))
+    val query: Future[HttpResponse] = Http(system).singleRequest(HttpRequest(uri = "http://localhost:8080/zorro"))
     val result = Await.result(query, 10.seconds)
     result.entity.contentType.toString() should equal("application/json")
+    Await.result(result.discardEntityBytes(materializer).future, 10.seconds)
   }
 
 }

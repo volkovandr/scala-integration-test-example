@@ -58,6 +58,18 @@ lazy val tester = (project in file("tester")).
 	    libraryDependencies ++= Seq(
           "org.scalatest" %% "scalatest" % "3.0.1",
           "org.testcontainers" % "testcontainers" % "1.5.1"
-      )
+      ),
+    
 	)
+
+// Additional tasks defined in this project
+lazy val cleanAll = taskKey[Unit]("Cleans the compiled binaries and removes the Docker containers")
+
+
+cleanAll := {
+  clean.in(app).value
+  clean.in(tester).value
+  clean.in(app, Docker).value
+}
+
 

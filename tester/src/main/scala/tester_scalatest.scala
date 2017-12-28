@@ -1,12 +1,12 @@
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
+import org.testcontainers.DockerClientFactory
 
-import scala.concurrent.{ Future, Await }
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 //import scala.util.{ Failure, Success }
 
@@ -36,11 +36,9 @@ class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers wit
   }
 
   override def afterAll() {
-      println("Stopping the container")
-      container.stop()
-      println("Terminating Akka")
-      system.terminate()
-      println("We're done!")
+    container.stop()
+    DockerClientFactory.instance().client().close()
+    system.terminate()
   }
 
   "The webservice" should "respond on localhost:8080" in {
@@ -61,6 +59,16 @@ class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers wit
     val query: Future[HttpResponse] = Http(system).singleRequest(HttpRequest(uri = s"http://localhost:$port/zorro"))
     val result = Await.result(query, 10.seconds)
     result.entity.contentType.toString() should equal("application/json")
+    Await.result(result.discardEntityBytes(materializer).future, 10.seconds)
+  }
+
+  it should "recover after system crash" in {
+    container.stop()
+    container.start()
+    port = container.getMappedPort(8080)
+    val query: Future[HttpResponse] = Http(system).singleRequest(HttpRequest(uri = s"http://localhost:$port"))
+    val result = Await.result(query, 10.seconds)
+    result shouldBe a [HttpResponse]
     Await.result(result.discardEntityBytes(materializer).future, 10.seconds)
   }
 

@@ -9,6 +9,9 @@ object Tester {
 		println("Note, that you are supposed to have the proper scala version be installed (2.12)")
 		println("Nevertherless we will execute the tests now...")
 
-		(new SimpleWebServiceSpecs).execute()		
+		(new SimpleWebServiceSpecs).execute()
+
+		println()
+		println("The tests are finished. Please wait until the Tester shutdown...")
 	}
 }

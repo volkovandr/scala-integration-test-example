@@ -10,7 +10,7 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 import org.testcontainers.containers.{GenericContainer => OTCGenericContainer}
-
+import com.github.dockerjava.api.model.Link
 
 
 class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers with BeforeAndAfterAll {
@@ -21,6 +21,8 @@ class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers wit
   var materializer: ActorMaterializer = _
   var container: OTCContainer = _
   var port: Int = _
+  var dbContainer: OTCContainer = _
+  var dbPort: Int = _
 
   override def beforeAll() {
     system = ActorSystem()
@@ -28,14 +30,23 @@ class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers wit
     materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
     
-    container = new OTCGenericContainer("scala-integrationtest-example-app:0.1").withExposedPorts(8080)
+    container = new OTCGenericContainer("scala-integrationtest-example-app:0.1")
+    container.withExposedPorts(8080)
+    container.withCreateContainerCmdModifier(cmd => cmd.withHostName("app"))
+    dbContainer = new OTCGenericContainer("postgres:10").withExposedPorts(5432)
+    dbContainer.withCreateContainerCmdModifier(cmd => cmd.withHostName("database"))
     
+    dbContainer.start()
+    dbPort = dbContainer.getMappedPort(5432)
+    val dbContainerName = dbContainer.getContainerName()
+    container.withCreateContainerCmdModifier(cmd => cmd.withLinks(new Link(dbContainerName, "database")))
     container.start()
     port = container.getMappedPort(8080)
   }
 
   override def afterAll() {
     container.stop()
+    dbContainer.stop()
     DockerClientFactory.instance().client().close()
     system.terminate()
   }

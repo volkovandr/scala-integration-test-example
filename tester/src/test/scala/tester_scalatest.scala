@@ -8,7 +8,6 @@ import org.testcontainers.DockerClientFactory
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-//import scala.util.{ Failure, Success }
 
 import org.testcontainers.containers.{GenericContainer => OTCGenericContainer}
 
@@ -73,22 +72,3 @@ class SimpleWebServiceSpecs extends FlatSpec with ScalaFutures with Matchers wit
   }
 
 }
-
-/*import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FunSuite, Matchers}
- 
-class HelloWorldSpecWithScalaFutures extends FunSuite with Matchers with ScalaFutures {
- 
-  test("A valid message should be returned to a valid name") {
-    whenReady(HelloWorld.sayHelloTo("Harry")) { result =>
-      result shouldBe Some("Hello Harry, welcome to the future world!")
-    }
-  }
- 
-  test("No message should be returned to the one who cannot be named") {
-    whenReady(HelloWorld.sayHelloTo("Voldemort")) { result =>
-      result shouldBe None
-    }
-  }
- 
-}*/

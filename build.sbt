@@ -64,12 +64,17 @@ lazy val tester = (project in file("tester")).
 
 // Additional tasks defined in this project
 lazy val cleanAll = taskKey[Unit]("Cleans the compiled binaries and removes the Docker containers")
-
+lazy val integrationTest = taskKey[Unit]("Builds the app, publishes Docker image locally and runs the integration tests")
 
 cleanAll := {
   clean.in(app).value
   clean.in(tester).value
-  clean.in(app, Docker).value
+  clean.in(app, Docker).result.value
 }
+
+integrationTest := Def.sequential(
+  publishLocal in (app, Docker),
+  test in (tester, Test),
+).value
 
 

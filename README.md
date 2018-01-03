@@ -10,4 +10,6 @@ The second one `tester` is an application that is trying to test the functionali
 
 # Goal
 
-The goal is to run both `app` and `tester` in separate Docker containers, let the tester do its tests, then shutdown and remove the containers and print the results. We are not there yet.
+The goal is to implement a task in sbt so that Jenkins could simply invoke the task and when the exit code is zero, publish the application.
+
+The task is supposed to build a Docker image with `app` and run it, and then invoke tests which will connect to the `app` in a Docker container and test its functionality.

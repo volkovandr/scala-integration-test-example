@@ -1,0 +1,3 @@
+{
+	"compose-file": "tester/src/main/resources/docker-compose/docker-compose.yml"
+}
